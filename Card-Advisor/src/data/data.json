@@ -1,0 +1,113 @@
+[
+    {
+        "name": "bce",
+        "cashback": "true",
+        "issuer": "amex",
+        "annualFee": "0",
+        "sub": "250",
+        "rotatingCategories": "false",
+        "foreignTransactionFee": "true",
+        "categories": {
+            "gasStations": {
+                "cashback": "3",
+                "limit": "6000"
+            },
+            "restaurants": {
+                "cashback": "1",
+                "limit": "0"
+            },
+            "supermarkets": {
+                "cashback": "3",
+                "limit": "6000"
+            },
+            "onlineGrocery": {
+                "cashback": "3",
+                "limit": "6000",
+                "sharesLimit": "true",
+                "sharedCategories": [
+                    "onlineGrocery",
+                    "otherOnlineRetail",
+                    "amazon"
+                ]
+            },
+            "otherOnlineRetail": {
+                "cashback": "3",
+                "limit": "6000",
+                "sharesLimit": "true",
+                "sharedCategories": [
+                    "onlineGrocery",
+                    "otherOnlineRetail",
+                    "amazon"
+                ]
+            },
+            "amazon": {
+                "cashback": "3",
+                "limit": "6000",
+                "sharesLimit": "true",
+                "sharedCategories": [
+                    "onlineGrocery",
+                    "otherOnlineRetail",
+                    "amazon"
+                ]
+            },
+            "drugStores": {
+                "cashback": "1",
+                "limit": "0"
+            },
+            "wholesaleClubs": {
+                "cashback": "1",
+                "limit": "0"
+            },
+            "airfare": {
+                "cashback": "1",
+                "limit": "0"
+            },
+            "hotels": {
+                "cashback": "1",
+                "limit": "0"
+            },
+            "vehicleRentals": {
+                "cashback": "1",
+                "limit": "0"
+            },
+            "movieEntertainment": {
+                "cashback": "1",
+                "limit": "0"
+            },
+            "streaming": {
+                "cashback": "1",
+                "limit": "0"
+            },
+            "otherTransit": {
+                "cashback": "1",
+                "limit": "0"
+            }
+        },
+        "credits": {
+            "uber": {},
+            "ihg": {},
+            "theEdit": {},
+            "travelCredit": {},
+            "peloton": {},
+            "lyft": {},
+            "stubhub": {},
+            "doordash": {},
+            "grubhub": {},
+            "dunkin": {},
+            "saks": {},
+            "amexHotelCollection": {},
+            "disney": {},
+            "fhr": {},
+            "digitalEntertainment": {},
+            "airlineIncidentals": {},
+            "walmart+": {},
+            "resy": {},
+            "precheck": {},
+            "nexus": {},
+            "globalEntry": {},
+            "appleTV/music": {},
+            "dashpass": {},
+            "clearPlus": {}
+        }
+    }
+]
