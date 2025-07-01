@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { calculateSingleCard } from '../services/calculateSingleCard'
 import Sidebar from './Sidebar'
 import SpendingAccordion from './SpendingAccordion'
 import CreditsAccordion from './CreditsAccordion'
 import ResultsSection from './ResultsSection'
+import UserTypeModal from './UserTypeModal'
+import data from '../data/data.json'
 
 // Helper function to parse currency values that may contain commas
 const parseCurrencyValue = (value) => {
@@ -14,6 +16,11 @@ const parseCurrencyValue = (value) => {
 }
 
 function AppPage() {
+    const [showUserTypeModal, setShowUserTypeModal] = useState(false)
+    const [showTopCardModal, setShowTopCardModal] = useState(false)
+    const [sidebarOpen, setSidebarOpen] = useState(false)
+    const resultsSectionRef = useRef(null)
+
     const [filters, setFilters] = useState({
         cardType: 'all',
         annualFee: 'all',
@@ -42,45 +49,18 @@ function AppPage() {
             vehicleRentals: '0.00',
             movieEntertainment: '0.00',
             streaming: '0.00',
-            otherTransit: '0.00'
+            otherTransit: '0.00',
+            rent: '0.00',
+            other: '0.00'
         }
     })
 
-    const [results, setResults] = useState([
-        {
-            id: 1,
-            name: "Chase Freedom Unlimited",
-            issuer: "Chase",
-            annualFee: 0,
-            creditScore: "Good",
-            cashback: "$450",
-            miles: "N/A",
-            rating: 4.8,
-            image: "💳"
-        },
-        {
-            id: 2,
-            name: "Citi Double Cash",
-            issuer: "Citi",
-            annualFee: 0,
-            creditScore: "Good",
-            cashback: "$400",
-            miles: "N/A",
-            rating: 4.6,
-            image: "💳"
-        },
-        {
-            id: 3,
-            name: "Amex Gold",
-            issuer: "American Express",
-            annualFee: 250,
-            creditScore: "Excellent",
-            cashback: "N/A",
-            miles: "60,000",
-            rating: 4.9,
-            image: "💳"
-        }
-    ])
+    const [results, setResults] = useState([])
+
+    // Show modal when component mounts
+    useEffect(() => {
+        setShowUserTypeModal(true)
+    }, [])
 
     const handleFilterChange = (filterType, value) => {
         setFilters(prev => ({
@@ -118,6 +98,25 @@ function AppPage() {
         return spendingValues.reduce((acc, curr) => acc + curr, 0).toFixed(2)
     }
 
+    // Update total spending whenever individual categories change
+    useEffect(() => {
+        const newTotal = calculateTotalSpending()
+        setUserInput(prev => ({
+            ...prev,
+            monthlySpending: {
+                ...prev.monthlySpending,
+                total: newTotal
+            }
+        }))
+    }, [userInput.monthlySpending.gasStations, userInput.monthlySpending.restaurants,
+    userInput.monthlySpending.supermarkets, userInput.monthlySpending.onlineGrocery,
+    userInput.monthlySpending.otherOnlineRetail, userInput.monthlySpending.amazon,
+    userInput.monthlySpending.drugStores, userInput.monthlySpending.wholesaleClubs,
+    userInput.monthlySpending.airfare, userInput.monthlySpending.hotels,
+    userInput.monthlySpending.vehicleRentals, userInput.monthlySpending.movieEntertainment,
+    userInput.monthlySpending.streaming, userInput.monthlySpending.otherTransit,
+    userInput.monthlySpending.rent, userInput.monthlySpending.other])
+
     const toggleDisplayMode = () => {
         setDisplayMode(prev => prev === 'dollars' ? 'percentages' : 'dollars')
     }
@@ -153,16 +152,14 @@ function AppPage() {
     }
 
     const handleSpendingDone = () => {
-        console.log("userInput.monthlySpending")
-        console.log(userInput.monthlySpending['total'])
-        const total = parseCurrencyValue(userInput.monthlySpending['total'])
-        console.log(total)
 
-        if (parseCurrencyValue(calculateTotalSpending()) > total) {
-            console.log(parseCurrencyValue(calculateTotalSpending()), total)
-            alert("The categories are adding up to more than the total spending. Please adjust your spending.")
-            return
-        }
+        setActiveAccordion('credits')
+    }
+
+    const handleCreditsDone = () => {
+        setResults([]);
+        const total = parseCurrencyValue(userInput.monthlySpending['total'])
+        const tempArray = []
 
         // Create categories object with category names as keys
         const categories = {}
@@ -171,21 +168,139 @@ function AppPage() {
                 categories[key] = parseCurrencyValue(value)
             }
         })
+        for (const card of data) {
+            const cardResult = calculateSingleCard({
+                total: parseCurrencyValue(userInput.monthlySpending.total),
+                categories: categories
+            }, card)
+            tempArray.push(cardResult)
+        }
+        tempArray.sort((a, b) => {
+            const aNetCashback = b.cashback - parseFloat(b.annualFee)
+            const bNetCashback = a.cashback - parseFloat(a.annualFee)
 
-        calculateSingleCard({
-            total: parseCurrencyValue(userInput.monthlySpending.total),
-            categories: categories
+            // Primary sort: by net cashback (ongoing value)
+            if (aNetCashback !== bNetCashback) {
+                return aNetCashback - bNetCashback
+            }
+
+            // Secondary sort: by sign-up bonus minus annual fee (first year value)
+            const aFirstYear = parseFloat(a.sub) - parseFloat(a.annualFee)
+            const bFirstYear = parseFloat(b.sub) - parseFloat(b.annualFee)
+            return bFirstYear - aFirstYear
         })
-        setActiveAccordion('credits')
-    }
+        let currentRank = 1;
+        let prevCashback = tempArray[0]?.cashback - parseFloat(tempArray[0]?.annualFee);
+        let prevFirstYear = parseFloat(tempArray[0]?.sub) - parseFloat(tempArray[0]?.annualFee);
 
-    const handleCreditsDone = () => {
-        // This could trigger the recommendation algorithm
-        console.log('All inputs complete, generating recommendations...')
+        for (const result of tempArray) {
+            const currentCashback = result.cashback - parseFloat(result.annualFee);
+            const currentFirstYear = parseFloat(result.sub) - parseFloat(result.annualFee);
+            if (currentCashback === prevCashback && currentFirstYear === prevFirstYear) {
+                result.rank = currentRank;
+            } else {
+                currentRank++;
+                result.rank = currentRank;
+                prevCashback = currentCashback;
+            }
+        }
+        console.log("Return Values", tempArray)
+        setResults(tempArray)
+
+        // Show top card modal immediately
+        setShowTopCardModal(true)
     }
 
     return (
         <div className="app-page">
+            <UserTypeModal
+                isOpen={showUserTypeModal}
+                onClose={() => setShowUserTypeModal(false)}
+            />
+
+            {/* Top Card Modal */}
+            {showTopCardModal && results.length > 0 && (
+                <div className="top-card-modal-overlay" onClick={() => setShowTopCardModal(false)}>
+                    <div className="top-card-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="top-card-modal-header">
+                            <div className="top-card-badge">
+                                <span className="rank-number">#1</span>
+                                <span className="rank-label">Top Pick</span>
+                            </div>
+                            <button className="modal-close-button" onClick={() => setShowTopCardModal(false)}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M18 6L6 18M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="top-card-content">
+                            <div className="top-card-image-container">
+                                {(() => {
+                                    try {
+                                        const basePath = window.location.pathname.includes('/Card-Advisor') ? '/Card-Advisor' : ''
+                                        const imageSrc = `${basePath}/card-images/${results[0].image}`
+                                        return (
+                                            <img
+                                                src={imageSrc}
+                                                alt={results[0].name}
+                                                className="top-card-image"
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                    e.target.nextSibling.style.display = 'block';
+                                                }}
+                                            />
+                                        )
+                                    } catch (error) {
+                                        return null
+                                    }
+                                })()}
+                                <span className="top-card-fallback" style={{ display: 'none' }}>💳</span>
+                            </div>
+
+                            <div className="top-card-details">
+                                <h2>{results[0].name}</h2>
+                                <p className="top-card-issuer">{results[0].issuer}</p>
+
+                                <div className="top-card-earnings">
+                                    <div className="top-card-earning-item">
+                                        <span className="earning-label">First Year Value</span>
+                                        <span className="earning-amount">${(results[0].cashback + parseInt(results[0].sub)).toFixed(0)}</span>
+                                        <span className="earning-breakdown">Sign-up bonus + annual cashback</span>
+                                    </div>
+                                    <div className="top-card-earning-item">
+                                        <span className="earning-label">Ongoing Value</span>
+                                        <span className="earning-amount cashback">${(results[0].cashback - parseFloat(results[0].annualFee)).toFixed(0)}</span>
+                                        <span className="earning-breakdown">Annual cashback - annual fee</span>
+                                    </div>
+                                </div>
+
+                                <div className="top-card-actions">
+                                    <button className="apply-button primary">
+                                        <span>Apply Now</span>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M5 12h14M12 5l7 7-7 7" />
+                                        </svg>
+                                    </button>
+                                    <button className="see-other-options-button secondary" onClick={() => {
+                                        setShowTopCardModal(false)
+                                        // Scroll to results section after modal closes
+                                        setTimeout(() => {
+                                            resultsSectionRef.current?.scrollIntoView({
+                                                behavior: 'smooth',
+                                                block: 'start'
+                                            })
+                                        }, 300)
+                                    }}>
+                                        <span>See Other Options</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="app-header">
                 <div className="container">
                     <h1>Card Advisor</h1>
@@ -194,13 +309,25 @@ function AppPage() {
             </div>
 
             <div className="app-layout">
+                {/* Sidebar Toggle Button */}
+                <button
+                    className="sidebar-toggle"
+                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                    aria-label={sidebarOpen ? 'Hide filters' : 'Show filters'}
+                >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M3 4h18M3 12h18M3 20h18" />
+                    </svg>
+                    <span>{sidebarOpen ? 'Hide Filters' : 'Show Filters'}</span>
+                </button>
 
                 <Sidebar
                     filters={filters}
                     onFilterChange={handleFilterChange}
+                    isOpen={sidebarOpen}
                 />
 
-                <main className="main-content">
+                <main className={`main-content ${sidebarOpen ? 'sidebar-open' : ''}`}>
                     <section className="accordion-section">
                         <SpendingAccordion
                             isActive={activeAccordion === 'spending'}
@@ -224,7 +351,9 @@ function AppPage() {
                         />
                     </section>
 
-                    <ResultsSection results={results} />
+                    <div ref={resultsSectionRef}>
+                        <ResultsSection results={results} />
+                    </div>
                 </main>
             </div>
         </div>

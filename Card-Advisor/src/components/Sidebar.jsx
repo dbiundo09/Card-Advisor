@@ -1,8 +1,8 @@
 import React from 'react'
 
-function Sidebar({ filters, onFilterChange }) {
+function Sidebar({ filters, onFilterChange, isOpen }) {
     return (
-        <aside className="sidebar">
+        <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
             <div className="sidebar-content">
                 <h3>Filters</h3>
 

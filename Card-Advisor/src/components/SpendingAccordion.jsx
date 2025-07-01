@@ -1,5 +1,25 @@
-import React from 'react'
+import React, { useState } from 'react'
 import CurrencyInput from 'react-currency-input-field'
+
+// Category descriptions for tooltips
+const categoryDescriptions = {
+    gasStations: "Gas stations, fuel purchases, and convenience store items at gas stations",
+    restaurants: "Dining out at restaurants, cafes, fast food, and food delivery services",
+    supermarkets: "Traditional grocery stores like Kroger, Safeway, Whole Foods, etc.",
+    onlineGrocery: "Online grocery delivery services like Instacart, Amazon Fresh, etc.",
+    otherOnlineRetail: "Online shopping excluding Amazon (e.g., Target.com, Walmart.com)",
+    amazon: "All purchases made on Amazon.com and Amazon Prime",
+    drugStores: "Pharmacies like CVS, Walgreens, Rite Aid, and drug store purchases",
+    wholesaleClubs: "Warehouse clubs like Costco, Sam's Club, BJ's Wholesale",
+    airfare: "Airline tickets, flight bookings, and air travel expenses",
+    hotels: "Hotel stays, accommodations, and lodging expenses",
+    vehicleRentals: "Car rentals, truck rentals, and vehicle rental services",
+    movieEntertainment: "Movie theaters, concerts, sporting events, and entertainment venues",
+    streaming: "Streaming services like Netflix, Hulu, Spotify, Apple Music, etc.",
+    otherTransit: "Public transportation, rideshares, parking, tolls, and transit expenses",
+    rent: "Rent payments, mortgage payments, and housing costs",
+    other: "All other expenses not covered by the categories above"
+}
 
 function SpendingAccordion({
     isActive,
@@ -13,6 +33,16 @@ function SpendingAccordion({
     getPlaceholder,
     onDone
 }) {
+    const [activeTooltip, setActiveTooltip] = useState(null)
+
+    const showTooltip = (category) => {
+        setActiveTooltip(category)
+    }
+
+    const hideTooltip = () => {
+        setActiveTooltip(null)
+    }
+
     return (
         <div className={`accordion ${isActive ? 'active' : ''}`}>
             <div className="accordion-header" onClick={onToggle}>
@@ -30,42 +60,15 @@ function SpendingAccordion({
             </div>
 
             <div className="accordion-content">
-                <div className="input-header">
-                    <div className="display-toggle">
-                        <span className={displayMode === 'dollars' ? 'active' : ''}>$</span>
-                        <button
-                            className="toggle-switch"
-                            onClick={onToggleDisplayMode}
-                            aria-label={`Switch to ${displayMode === 'dollars' ? 'percentages' : 'dollars'} mode`}
-                        >
-                            <div className={`toggle-slider ${displayMode === 'percentages' ? 'active' : ''}`}></div>
-                        </button>
-                        <span className={displayMode === 'percentages' ? 'active' : ''}>%</span>
-                    </div>
-                </div>
-
                 <div className="spending-section">
-                    {displayMode === 'dollars' && (
-                        <div className="spending-total">
-                            <div className="input-group total-group">
-                                <label>Total Monthly Spending</label>
-                                <CurrencyInput
-                                    id="total-spending"
-                                    name="total-spending"
-                                    placeholder="Please enter a number"
-                                    defaultValue={userInput.monthlySpending.total}
-                                    decimalsLimit={2}
-                                    onValueChange={(value) => onSpendingChange('total', value)}
-                                    onBlur={(e) => {
-                                        // Ensure total is properly set when user finishes typing
-                                        const value = e.target.value || '0.00'
-                                        onSpendingChange('total', value)
-                                    }}
-                                    className="currency-input"
-                                />
+                    <div className="spending-total">
+                        <div className="input-group total-group">
+                            <label>Total Monthly Spending</label>
+                            <div className="total-display">
+                                ${userInput.monthlySpending.total}
                             </div>
                         </div>
-                    )}
+                    </div>
 
                     <div className="spending-grid">
                         {[
@@ -82,10 +85,31 @@ function SpendingAccordion({
                             { key: 'vehicleRentals', label: 'Vehicle Rentals' },
                             { key: 'movieEntertainment', label: 'Movie & Entertainment' },
                             { key: 'streaming', label: 'Streaming' },
-                            { key: 'otherTransit', label: 'Other Transit' }
+                            { key: 'otherTransit', label: 'Other Transit' },
+                            { key: 'rent', label: 'Rent' },
+                            { key: 'other', label: 'Other' }
                         ].map(({ key, label }) => (
                             <div key={key} className="input-group">
-                                <label>{label}</label>
+                                <div className="label-container">
+                                    <label>{label}</label>
+                                    <div
+                                        className="info-icon"
+                                        onMouseEnter={() => showTooltip(key)}
+                                        onMouseLeave={hideTooltip}
+                                        onClick={() => showTooltip(activeTooltip === key ? null : key)}
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                                            <line x1="12" y1="9" x2="12" y2="13" />
+                                            <circle cx="12" cy="17" r="1" />
+                                        </svg>
+                                        {activeTooltip === key && (
+                                            <div className="tooltip">
+                                                {categoryDescriptions[key]}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                                 {displayMode === 'dollars' ? (
                                     <CurrencyInput
                                         id={key}
