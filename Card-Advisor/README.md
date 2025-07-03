@@ -38,12 +38,21 @@ cd Card-Advisor
 npm install
 ```
 
-3. Start the development server:
+3. Set up environment variables:
+```bash
+# Copy the example environment file
+cp .env.example .env.local
+
+# Edit .env.local and add your API key
+# VITE_API_KEY=your_actual_api_key_here
+```
+
+4. Start the development server:
 ```bash
 npm run dev
 ```
 
-4. Open your browser and navigate to `http://localhost:5173`
+5. Open your browser and navigate to `http://localhost:5173`
 
 ## Available Scripts
 
@@ -70,6 +79,20 @@ npm run deploy
 ### Automatic Deployment
 
 The app is configured with GitHub Actions for automatic deployment. Simply push to the `main` branch and the app will be automatically deployed to GitHub Pages.
+
+#### Setting up GitHub Secrets
+
+To use environment variables in production, you need to set up GitHub Secrets:
+
+1. Go to your GitHub repository
+2. Navigate to **Settings** → **Secrets and variables** → **Actions**
+3. Click **New repository secret**
+4. Add your secret:
+   - **Name**: `VITE_API_KEY`
+   - **Value**: Your actual API key
+5. Click **Add secret**
+
+The workflow will automatically use this secret during the build process.
 
 ## Project Structure
 

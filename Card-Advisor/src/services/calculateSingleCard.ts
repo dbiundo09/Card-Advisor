@@ -1,11 +1,9 @@
-import data from "../data/data.json";
 import Query from "../types/Query";
 import { CardResult } from "../types/CardResult";
 import { annualizeSpending } from "../util/annualizeSpending";
-
+import { calculateCategoryForCard } from "../util/calculateCategoryForCard";
 
 export const calculateSingleCard = (inputs: Query, card: any = null) => {
-    console.log("Card data", card)
     const annualizedSpending = annualizeSpending(inputs);
     const { categories, total } = annualizedSpending;
     const cardCategories = card.categories;
@@ -19,7 +17,6 @@ export const calculateSingleCard = (inputs: Query, card: any = null) => {
     if (isCashback) {
         for (const category in categories) {
             if (!(category in cardCategories)) {
-                console.log("Category not in card categories", category)
                 continue;
             }
             const correspondingCardCategory = cardCategories[category];
@@ -29,7 +26,6 @@ export const calculateSingleCard = (inputs: Query, card: any = null) => {
                 limit = sharedLimits[category];
             }
             if (limit !== -1 && categorySpend > limit) {
-                console.log("Category spend is greater than limit", category, categorySpend, limit)
                 categorySpend = limit;
                 limit = 0;
             } else if (limit !== -1) {
@@ -37,7 +33,6 @@ export const calculateSingleCard = (inputs: Query, card: any = null) => {
             }
             totalCategorySpend += categorySpend;
             const cashbackValue = parseFloat(correspondingCardCategory["cashback"]) / 100 * categorySpend;
-            console.log("Category:", category, "Cashback value:", cashbackValue);
             savingsPerCategory[category] = {
                 cashback: parseFloat(correspondingCardCategory["cashback"]),
                 categorySpend: categorySpend,

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { config } from '../util/config'
 
 function ResultsSection({ results }) {
     const [expandedCards, setExpandedCards] = useState(new Set())
@@ -6,16 +7,39 @@ function ResultsSection({ results }) {
     const [isMobile, setIsMobile] = useState(false)
     const [mathModalOpen, setMathModalOpen] = useState(false)
     const [selectedCard, setSelectedCard] = useState(null)
+    const [selectedCardTab, setSelectedCardTab] = useState('cardA')
+    const [showAllCards, setShowAllCards] = useState(false)
+    const [cardsPerRow, setCardsPerRow] = useState(3)
 
-    // Check if screen is small enough for cards to be stacked
+
+
+    useEffect(() => {
+        console.log("Rendering")
+        console.log("Results", results)
+
+        // Test API key functionality
+        console.log("=== API Key Test ===")
+        console.log("Has API Key:", config.hasApiKey())
+        console.log("API Key (first 10 chars):", config.getApiKey() ? config.getApiKey().substring(0, 10) + "..." : "Not set")
+        console.log("Full API Key:", config.getApiKey())
+        console.log("Environment:", import.meta.env.MODE)
+        console.log("===================")
+    }, [results])
+
+    // Check if screen is small enough for cards to be stacked and calculate cards per row
     useEffect(() => {
         const checkScreenSize = () => {
             const grid = document.querySelector('.results-grid')
             if (grid) {
                 const computedStyle = window.getComputedStyle(grid)
                 const gridTemplateColumns = computedStyle.gridTemplateColumns
+                const columns = gridTemplateColumns.split(' ').length
+
                 // If grid has only one column, we're in mobile/stacked mode
-                setIsMobile(gridTemplateColumns.split(' ').length === 1)
+                setIsMobile(columns === 1)
+
+                // Set cards per row based on grid columns
+                setCardsPerRow(columns)
             }
         }
 
@@ -39,12 +63,18 @@ function ResultsSection({ results }) {
 
     const openMathModal = (card) => {
         setSelectedCard(card)
+        // Set to first card name if it's a multi-card result, otherwise use 'cardA' for single cards
+        const firstCardName = card.savingsPerCategory && Object.keys(card.savingsPerCategory).length > 0
+            ? Object.keys(card.savingsPerCategory)[0]
+            : 'cardA'
+        setSelectedCardTab(firstCardName)
         setMathModalOpen(true)
     }
 
     const closeMathModal = () => {
         setMathModalOpen(false)
         setSelectedCard(null)
+        setSelectedCardTab('cardA')
     }
 
     const getImageSrc = (imageName) => {
@@ -65,6 +95,22 @@ function ResultsSection({ results }) {
                     <div className="empty-icon">💳</div>
                     <h2>Ready to Find Your Perfect Card?</h2>
                     <p>Complete the spending and credit information above to see personalized card recommendations.</p>
+
+                    {/* API Key Test Section */}
+                    <div style={{
+                        marginTop: '20px',
+                        padding: '15px',
+                        backgroundColor: '#f5f5f5',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontFamily: 'monospace'
+                    }}>
+                        <h4 style={{ margin: '0 0 10px 0', color: '#333' }}>🔑 API Key Test</h4>
+                        <div><strong>Has API Key:</strong> {config.hasApiKey() ? '✅ Yes' : '❌ No'}</div>
+                        <div><strong>API Key Preview:</strong> {config.getApiKey() ? config.getApiKey().substring(0, 10) + "..." : "Not set"}</div>
+                        <div><strong>Environment:</strong> {import.meta.env.MODE}</div>
+                        <div><strong>Full API Key:</strong> {config.getApiKey() || "Not available"}</div>
+                    </div>
                 </div>
             </section>
         )
@@ -78,7 +124,7 @@ function ResultsSection({ results }) {
             </div>
 
             <div className="results-grid">
-                {results.map((card) => {
+                {results.slice(0, showAllCards ? results.length : cardsPerRow).map((card) => {
                     const isExpanded = !isMobile || expandedCards.has(card.name)
                     return (
                         <div key={card.image} className={`card-result ${isExpanded ? 'expanded' : ''} ${isMobile ? 'mobile' : 'desktop'}`}>
@@ -128,11 +174,11 @@ function ResultsSection({ results }) {
                                     <div className="summary-earnings">
                                         <div className="summary-item">
                                             <span className="label">First Year</span>
-                                            <span className="value">${(card.cashback + parseInt(card.sub)).toFixed(0)}</span>
+                                            <span className="value">${(card.totalCashback + parseInt(card.sub)).toFixed(0)}</span>
                                         </div>
                                         <div className="summary-item">
                                             <span className="label">Ongoing</span>
-                                            <span className="value cashback">${card.cashback.toFixed(0)}</span>
+                                            <span className="value cashback">${card.totalCashback.toFixed(0)}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -148,7 +194,7 @@ function ResultsSection({ results }) {
                                             <span className="section-subtitle">Includes sign-up bonus</span>
                                         </div>
                                         <div className="earnings-amount">
-                                            <span className="amount">${(card.cashback + parseInt(card.sub)).toFixed(0)}</span>
+                                            <span className="amount">${(card.totalCashback + parseInt(card.sub)).toFixed(0)}</span>
                                             <span className="label">Total First Year</span>
                                         </div>
                                         <div className="earnings-breakdown">
@@ -158,7 +204,7 @@ function ResultsSection({ results }) {
                                             </div>
                                             <div className="breakdown-item">
                                                 <span className="label">Annual Cashback</span>
-                                                <span className="value cashback">${card.cashback.toFixed(0)}</span>
+                                                <span className="value cashback">${card.totalCashback.toFixed(0)}</span>
                                             </div>
                                             <div className="breakdown-item">
                                                 <span className="label">Annual Fee</span>
@@ -174,13 +220,13 @@ function ResultsSection({ results }) {
                                             <span className="section-subtitle">Year 2+ earnings</span>
                                         </div>
                                         <div className="earnings-amount">
-                                            <span className="amount cashback">${(card.cashback - parseFloat(card.annualFee)).toFixed(0)}</span>
+                                            <span className="amount cashback">${(card.totalCashback - parseFloat(card.annualFee)).toFixed(0)}</span>
                                             <span className="label">Net Annual Value</span>
                                         </div>
                                         <div className="earnings-equation">
                                             <div className="equation-row">
                                                 <span className="equation-label">Annual Cashback</span>
-                                                <span className="equation-value cashback">+${card.cashback.toFixed(0)}</span>
+                                                <span className="equation-value cashback">+${card.totalCashback.toFixed(0)}</span>
                                             </div>
                                             <div className="equation-row">
                                                 <span className="equation-label">Annual Fee</span>
@@ -189,7 +235,7 @@ function ResultsSection({ results }) {
                                             <div className="equation-divider"></div>
                                             <div className="equation-row total">
                                                 <span className="equation-label">Net Annual Value</span>
-                                                <span className="equation-value total">${(card.cashback - parseFloat(card.annualFee)).toFixed(0)}</span>
+                                                <span className="equation-value total">${(card.totalCashback - parseFloat(card.annualFee)).toFixed(0)}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -212,6 +258,28 @@ function ResultsSection({ results }) {
                 })}
             </div>
 
+            {results.length > cardsPerRow && (
+                <div className="results-expand">
+                    <button
+                        className="expand-results-button"
+                        onClick={() => setShowAllCards(!showAllCards)}
+                    >
+                        <span>{showAllCards ? 'Show Less' : `Show All ${results.length} Cards`}</span>
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            className={`expand-icon ${showAllCards ? 'expanded' : ''}`}
+                        >
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                    </button>
+                </div>
+            )}
+
             <div className="results-footer">
                 <div className="disclaimer">
                     <p>💡 <strong>Pro Tip:</strong> {isMobile ? 'Tap on any card to see detailed breakdown.' : 'All cards are fully expanded for easy comparison.'} First year value includes sign-up bonuses minus annual fees.</p>
@@ -225,22 +293,53 @@ function ResultsSection({ results }) {
                         <div className="math-modal-header">
                             <div className="modal-card-info">
                                 <div className="modal-card-image-container">
-                                    {getImageSrc(selectedCard.image) ? (
-                                        <img
-                                            src={getImageSrc(selectedCard.image)}
-                                            alt={selectedCard.name}
-                                            className="modal-card-image"
-                                            onError={(e) => {
-                                                e.target.style.display = 'none';
-                                                e.target.nextSibling.style.display = 'block';
-                                            }}
-                                        />
-                                    ) : null}
-                                    <span className="modal-card-fallback" style={{ display: getImageSrc(selectedCard.image) ? 'none' : 'block' }}>💳</span>
+                                    {(() => {
+                                        // Get the current card's image based on selected tab
+                                        let cardImage = selectedCard.image
+                                        let cardName = selectedCard.name
+                                        let cardIssuer = selectedCard.issuer
+
+                                        if (selectedCard.cards && selectedCard.cards.length > 1) {
+                                            const currentCard = selectedCard.cards.find(card => card.key === selectedCardTab)
+                                            if (currentCard) {
+                                                cardImage = currentCard.image
+                                                cardName = currentCard.name
+                                                cardIssuer = currentCard.issuer
+                                            }
+                                        }
+
+                                        return (
+                                            <>
+                                                {getImageSrc(cardImage) ? (
+                                                    <img
+                                                        src={getImageSrc(cardImage)}
+                                                        alt={cardName}
+                                                        className="modal-card-image"
+                                                        onError={(e) => {
+                                                            e.target.style.display = 'none';
+                                                            e.target.nextSibling.style.display = 'block';
+                                                        }}
+                                                    />
+                                                ) : null}
+                                                <span className="modal-card-fallback" style={{ display: getImageSrc(cardImage) ? 'none' : 'block' }}>💳</span>
+                                            </>
+                                        )
+                                    })()}
                                 </div>
                                 <div className="modal-card-details">
-                                    <h3>{selectedCard.name}</h3>
-                                    <p className="modal-issuer">{selectedCard.issuer}</p>
+                                    <h3>{(() => {
+                                        if (selectedCard.savingsPerCategory && Object.keys(selectedCard.savingsPerCategory).length > 1) {
+                                            return selectedCardTab
+                                        }
+                                        return selectedCard.name
+                                    })()}</h3>
+                                    <p className="modal-issuer">{(() => {
+                                        if (selectedCard.savingsPerCategory && Object.keys(selectedCard.savingsPerCategory).length > 1) {
+                                            // For multi-card results, we don't have issuer info in the savingsPerCategory
+                                            return "Multiple Cards"
+                                        }
+                                        return selectedCard.issuer
+                                    })()}</p>
                                 </div>
                             </div>
                             <button className="modal-close-button" onClick={closeMathModal}>
@@ -250,6 +349,21 @@ function ResultsSection({ results }) {
                             </button>
                         </div>
 
+                        {/* Card Tabs - Only show if multiple cards */}
+                        {selectedCard.savingsPerCategory && Object.keys(selectedCard.savingsPerCategory).length > 1 && (
+                            <div className="card-tabs">
+                                {Object.keys(selectedCard.savingsPerCategory).map((cardName) => (
+                                    <button
+                                        key={cardName}
+                                        className={`card-tab ${selectedCardTab === cardName ? 'active' : ''}`}
+                                        onClick={() => setSelectedCardTab(cardName)}
+                                    >
+                                        {cardName}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
                         <div className="math-modal-content">
                             <div className="math-header">
                                 <h4>Category Breakdown</h4>
@@ -257,12 +371,21 @@ function ResultsSection({ results }) {
                             </div>
                             <div className="category-math-grid">
                                 {(() => {
-                                    // Calculate total cashback to determine significant categories
-                                    const totalCashback = Object.values(selectedCard.savingsPerCategory)
-                                        .reduce((sum, data) => sum + data.value, 0)
+                                    // Handle both single card and multi-card data structures
+                                    let categoryData = selectedCard.savingsPerCategory
 
-                                    return Object.entries(selectedCard.savingsPerCategory).map(([category, data]) => {
-                                        const cashbackPercentage = (data.value / totalCashback) * 100
+                                    // If it's a multi-card structure, get the selected card's data
+                                    if (selectedCard.savingsPerCategory && Object.keys(selectedCard.savingsPerCategory).length > 1) {
+                                        // Multi-card structure - extract data for selected card
+                                        categoryData = selectedCard.savingsPerCategory[selectedCardTab] || {}
+                                    }
+
+                                    // Calculate total cashback to determine significant categories
+                                    const totalCashback = Object.values(categoryData)
+                                        .reduce((sum, data) => sum + parseFloat(data.value), 0)
+
+                                    return Object.entries(categoryData).map(([category, data]) => {
+                                        const cashbackPercentage = (parseFloat(data.value) / totalCashback) * 100
                                         const isSignificant = cashbackPercentage >= 15 // Highlight if 15% or more of total cashback
 
                                         return (
@@ -286,7 +409,7 @@ function ResultsSection({ results }) {
                                                     </div>
                                                     <div className="math-row">
                                                         <span className="math-label">Cashback</span>
-                                                        <span className="math-value cashback">${data.value.toFixed(2)}</span>
+                                                        <span className="math-value cashback">${parseFloat(data.value).toFixed(2)}</span>
                                                     </div>
                                                     <div className="math-row">
                                                         <span className="math-label">% of Total</span>

@@ -1,11 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { calculateSingleCard } from '../services/calculateSingleCard'
 import Sidebar from './Sidebar'
 import SpendingAccordion from './SpendingAccordion'
 import CreditsAccordion from './CreditsAccordion'
+import ExistingCardsAccordion from './ExistingCardsAccordion'
 import ResultsSection from './ResultsSection'
 import UserTypeModal from './UserTypeModal'
 import data from '../data/data.json'
+import calculateTwoCardCashback from '../util/calculateTwoCardCashback'
+import calculateNCardCashback from '../util/calculateNCardCashback'
 
 // Helper function to parse currency values that may contain commas
 const parseCurrencyValue = (value) => {
@@ -19,6 +22,7 @@ function AppPage() {
     const [showUserTypeModal, setShowUserTypeModal] = useState(false)
     const [showTopCardModal, setShowTopCardModal] = useState(false)
     const [sidebarOpen, setSidebarOpen] = useState(false)
+    const [selectedCards, setSelectedCards] = useState([])
     const resultsSectionRef = useRef(null)
 
     const [filters, setFilters] = useState({
@@ -29,7 +33,7 @@ function AppPage() {
     })
 
     const [displayMode, setDisplayMode] = useState('dollars') // 'dollars' or 'percentages'
-    const [activeAccordion, setActiveAccordion] = useState('spending') // 'spending' or 'credits'
+    const [activeAccordion, setActiveAccordion] = useState('spending') // 'spending', 'credits', or 'existingCards'
 
     const [userInput, setUserInput] = useState({
         income: '',
@@ -75,6 +79,16 @@ function AppPage() {
             [field]: value
         }))
     }
+
+    const handleSetSelectedCards = useCallback((cards) => {
+        console.log("Setting selected cards", cards)
+        setSelectedCards(cards)
+        // Also update userInput.existingCards to keep them in sync
+        setUserInput(prev => ({
+            ...prev,
+            existingCards: cards
+        }))
+    }, [])
 
     const handleSpendingChange = (category, value) => {
         setUserInput(prev => {
@@ -157,6 +171,10 @@ function AppPage() {
     }
 
     const handleCreditsDone = () => {
+        setActiveAccordion('existingCards')
+    }
+
+    const handleExistingCardsDone = () => {
         setResults([]);
         const total = parseCurrencyValue(userInput.monthlySpending['total'])
         const tempArray = []
@@ -168,16 +186,28 @@ function AppPage() {
                 categories[key] = parseCurrencyValue(value)
             }
         })
-        for (const card of data) {
-            const cardResult = calculateSingleCard({
-                total: parseCurrencyValue(userInput.monthlySpending.total),
-                categories: categories
-            }, card)
+
+        // Use selectedCards state instead of userInput.existingCards
+        const existingCardNames = selectedCards
+        for (let i = 0; i < 10; i++) {
+            console.log("=".repeat(i))
+        }
+        const localData = data
+        const existingCardData = data.filter(card => existingCardNames.includes(card.name))
+        const availableCards = data.filter(card => !existingCardNames.includes(card.name))
+
+        for (const card of availableCards) {
+            const nCardResult = calculateNCardCashback(card, existingCardData, { total: total, categories: categories })
+            console.log("N Card Result", nCardResult)
+            const cardResult = nCardResult.cards[0]
+            cardResult["totalCashback"] = nCardResult.totalCashback
+            cardResult["savingsPerCategory"] = nCardResult.savingsPerCategory
+            cardResult["newCardTotalCashback"] = nCardResult.newCardTotalCashback
             tempArray.push(cardResult)
         }
         tempArray.sort((a, b) => {
-            const aNetCashback = b.cashback - parseFloat(b.annualFee)
-            const bNetCashback = a.cashback - parseFloat(a.annualFee)
+            const aNetCashback = b.totalCashback - parseFloat(b.annualFee)
+            const bNetCashback = a.totalCashback - parseFloat(a.annualFee)
 
             // Primary sort: by net cashback (ongoing value)
             if (aNetCashback !== bNetCashback) {
@@ -190,11 +220,11 @@ function AppPage() {
             return bFirstYear - aFirstYear
         })
         let currentRank = 1;
-        let prevCashback = tempArray[0]?.cashback - parseFloat(tempArray[0]?.annualFee);
+        let prevCashback = tempArray[0]?.totalCashback - parseFloat(tempArray[0]?.annualFee);
         let prevFirstYear = parseFloat(tempArray[0]?.sub) - parseFloat(tempArray[0]?.annualFee);
 
         for (const result of tempArray) {
-            const currentCashback = result.cashback - parseFloat(result.annualFee);
+            const currentCashback = result.totalCashback - parseFloat(result.annualFee);
             const currentFirstYear = parseFloat(result.sub) - parseFloat(result.annualFee);
             if (currentCashback === prevCashback && currentFirstYear === prevFirstYear) {
                 result.rank = currentRank;
@@ -206,6 +236,8 @@ function AppPage() {
         }
         console.log("Return Values", tempArray)
         setResults(tempArray)
+
+
 
         // Show top card modal immediately
         setShowTopCardModal(true)
@@ -265,12 +297,12 @@ function AppPage() {
                                 <div className="top-card-earnings">
                                     <div className="top-card-earning-item">
                                         <span className="earning-label">First Year Value</span>
-                                        <span className="earning-amount">${(results[0].cashback + parseInt(results[0].sub)).toFixed(0)}</span>
+                                        <span className="earning-amount">${(results[0].totalCashback + parseInt(results[0].sub)).toFixed(0)}</span>
                                         <span className="earning-breakdown">Sign-up bonus + annual cashback</span>
                                     </div>
                                     <div className="top-card-earning-item">
                                         <span className="earning-label">Ongoing Value</span>
-                                        <span className="earning-amount cashback">${(results[0].cashback - parseFloat(results[0].annualFee)).toFixed(0)}</span>
+                                        <span className="earning-amount cashback">${(results[0].totalCashback - parseFloat(results[0].annualFee)).toFixed(0)}</span>
                                         <span className="earning-breakdown">Annual cashback - annual fee</span>
                                     </div>
                                 </div>
@@ -348,6 +380,15 @@ function AppPage() {
                             userInput={userInput}
                             onInputChange={handleInputChange}
                             onDone={handleCreditsDone}
+                        />
+
+                        <ExistingCardsAccordion
+                            isActive={activeAccordion === 'existingCards'}
+                            onToggle={() => setActiveAccordion('existingCards')}
+                            handleSetSelectedCards={handleSetSelectedCards}
+                            userInput={userInput}
+                            onInputChange={handleInputChange}
+                            onDone={handleExistingCardsDone}
                         />
                     </section>
 

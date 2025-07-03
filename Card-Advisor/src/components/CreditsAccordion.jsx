@@ -8,9 +8,9 @@ const creditPreferences = {
         icon: "✈️",
         preferences: [
             { id: "travelCredit", label: "Travel Credit", description: "Annual travel statement credits used on any travel related purchases", easyToUse: true },
-            { id: "airlineIncidentals", label: "Airline Incidental Credits", description: "Baggage, food, seat fees" },
-            { id: "precheck", label: "TSA PreCheck Credit", description: "Fast security screening", easyToUse: true },
-            { id: "globalEntry", label: "Global Entry Credit", description: "International travel expedited", easyToUse: true },
+            { id: "airlineIncidentals", label: "Airline Incidental Credits", description: "Baggage, food, seat fees", easyToUse: true },
+            { id: "precheck", label: "TSA PreCheck Credit", description: "Fast security screening" },
+            { id: "globalEntry", label: "Global Entry Credit", description: "International travel expedited" },
             { id: "nexus", label: "NEXUS Credit", description: "US-Canada border expedited" },
             { id: "clearPlus", label: "CLEAR Plus", description: "Biometric security screening" }
         ]
@@ -20,13 +20,13 @@ const creditPreferences = {
         icon: "🍽️",
         preferences: [
             { id: "resy", label: "Resy Dining Credits", description: "Restaurant reservation credits" },
-            { id: "doordash", label: "DoorDash Credits", description: "Food delivery service", easyToUse: true },
-            { id: "grubhub", label: "Grubhub Credits", description: "Food delivery service", easyToUse: true },
-            { id: "dunkin", label: "Dunkin' Credits", description: "Coffee and food credits", easyToUse: true },
+            { id: "doordash", label: "DoorDash Credits", description: "Food delivery service" },
+            { id: "grubhub", label: "Grubhub Credits", description: "Food delivery service" },
+            { id: "dunkin", label: "Dunkin' Credits", description: "Coffee and food credits" },
             { id: "stubhub", label: "StubHub Credits", description: "Event ticket credits" },
-            { id: "digitalEntertainment", label: "Digital Entertainment", description: "General streaming and media credits", easyToUse: true },
-            { id: "appleTV/music", label: "Apple TV/Music", description: "Apple entertainment services", easyToUse: true },
-            { id: "dashpass", label: "DashPass Membership", description: "DoorDash premium service", easyToUse: true },
+            { id: "digitalEntertainment", label: "Digital Entertainment", description: "General streaming and media credits" },
+            { id: "appleTV/music", label: "Apple TV/Music", description: "Apple entertainment services" },
+            { id: "dashpass", label: "DashPass Membership", description: "DoorDash premium service" },
             { id: "disney", label: "Disney Credits", description: "Disney theme park and resorts" },
         ]
     },
@@ -35,22 +35,22 @@ const creditPreferences = {
         icon: "🛍️",
         preferences: [
             { id: "saks", label: "Saks Fifth Avenue", description: "Luxury department store credits" },
-            { id: "walmart+", label: "Walmart+ Membership", description: "Walmart shopping benefits", easyToUse: true },
+            { id: "walmart+", label: "Walmart+ Membership", description: "Walmart shopping benefits" },
         ]
     },
     transportation: {
         title: "Transportation & Rides",
         icon: "🚗",
         preferences: [
-            { id: "uber", label: "Uber Credits", description: "Ride-sharing service credits", easyToUse: true },
-            { id: "lyft", label: "Lyft Credits", description: "Ride-sharing service credits", easyToUse: true }
+            { id: "uber", label: "Uber Credits", description: "Ride-sharing service credits" },
+            { id: "lyft", label: "Lyft Credits", description: "Ride-sharing service credits" }
         ]
     },
     lifestyle: {
         title: "Lifestyle & Wellness",
         icon: "🏃",
         preferences: [
-            { id: "peloton", label: "Peloton Credits", description: "Fitness equipment and classes", easyToUse: true },
+            { id: "peloton", label: "Peloton Credits", description: "Fitness equipment and classes" },
         ]
     },
     hotels: {
@@ -206,7 +206,7 @@ function CreditsAccordion({
 
                     <div className="accordion-actions">
                         <button className="done-button" onClick={handleDone}>
-                            Generate Recommendations
+                            Done
                         </button>
                     </div>
                 </div>

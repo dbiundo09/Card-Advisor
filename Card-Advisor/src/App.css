@@ -303,8 +303,8 @@ body {
 /* Sidebar Toggle Button */
 .sidebar-toggle {
   position: fixed;
-  top: 120px;
-  left: 2rem;
+  top: 90px;
+  left: 1rem;
   z-index: 100;
   background: white;
   border: 1px solid #e2e8f0;
@@ -1582,6 +1582,40 @@ body {
   border-color: #cbd5e1;
 }
 
+.results-expand {
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.expand-results-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.expand-results-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.expand-results-button .expand-icon {
+  transition: transform 0.3s ease;
+}
+
+.expand-results-button .expand-icon.expanded {
+  transform: rotate(180deg);
+}
+
 .results-footer {
   margin-top: 2rem;
   padding: 1.5rem;
@@ -2351,5 +2385,413 @@ body {
 
   .user-type-content p {
     font-size: 13px;
+  }
+}
+
+/* Existing Cards Accordion Styles */
+.existing-cards-section {
+  padding: 0;
+}
+
+.existing-cards-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.existing-cards-header h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.existing-cards-header p {
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+
+/* Selected Cards Grid */
+.selected-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.selected-card-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: white;
+  position: relative;
+}
+
+.selected-card-item:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.card-image-container {
+  width: 60px;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-fallback {
+  font-size: 1.2rem;
+  color: #64748b;
+}
+
+.card-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-name {
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.card-issuer {
+  color: #64748b;
+  font-size: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.card-features {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.feature {
+  padding: 0.25rem 0.5rem;
+  background: #f1f5f9;
+  color: #475569;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.feature.no-fee {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.feature.fee {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.remove-card-btn {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.remove-card-btn:hover {
+  background: #f1f5f9;
+  color: #dc2626;
+}
+
+/* Add Card Button */
+.add-card-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #f8fafc;
+  min-height: 80px;
+}
+
+.add-card-item:hover {
+  border-color: #667eea;
+  background: #f1f5ff;
+}
+
+.add-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.add-icon {
+  color: #667eea;
+  font-size: 1.5rem;
+}
+
+.add-text {
+  color: #475569;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+/* Add Card Modal */
+.add-card-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.add-card-modal {
+  background: white;
+  border-radius: 16px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+.add-card-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.add-card-modal .modal-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.add-card-modal .modal-close-button {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.add-card-modal .modal-close-button:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.add-card-modal .modal-content {
+  padding: 2rem;
+}
+
+.add-card-modal .search-filter-section {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  align-items: center;
+}
+
+.add-card-modal .search-box {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.add-card-modal .search-box svg {
+  position: absolute;
+  left: 1rem;
+  color: #64748b;
+  z-index: 1;
+}
+
+.add-card-modal .search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.add-card-modal .search-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.add-card-modal .filter-dropdown {
+  min-width: 150px;
+}
+
+.add-card-modal .issuer-filter {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-card-modal .issuer-filter:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.modal-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.modal-card-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.modal-card-item:hover {
+  border-color: #667eea;
+  background: linear-gradient(135deg, #f8faff 0%, #f1f5ff 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.modal-card-item .card-image-container {
+  width: 80px;
+  height: 50px;
+}
+
+.modal-card-item .card-name {
+  font-size: 1rem;
+}
+
+.modal-card-item .card-issuer {
+  font-size: 0.875rem;
+}
+
+/* Mobile Responsive for Existing Cards */
+@media (max-width: 768px) {
+  .selected-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .selected-card-item {
+    padding: 0.75rem;
+  }
+
+  .card-content {
+    gap: 0.75rem;
+  }
+
+  .card-image-container {
+    width: 50px;
+    height: 35px;
+  }
+
+  .card-name {
+    font-size: 0.8rem;
+  }
+
+  .card-issuer {
+    font-size: 0.7rem;
+  }
+
+  .card-features {
+    gap: 0.25rem;
+  }
+
+  .feature {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.375rem;
+  }
+
+  .add-card-modal {
+    margin: 20px;
+    max-width: none;
+  }
+
+  .add-card-modal .modal-header {
+    padding: 1rem 1.5rem;
+  }
+
+  .add-card-modal .modal-content {
+    padding: 1.5rem;
+  }
+
+  .add-card-modal .search-filter-section {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .modal-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .modal-card-item {
+    padding: 0.75rem;
+  }
+
+  .modal-card-item .card-image-container {
+    width: 60px;
+    height: 40px;
+  }
+
+  .modal-card-item .card-name {
+    font-size: 0.875rem;
+  }
+
+  .modal-card-item .card-issuer {
+    font-size: 0.75rem;
   }
 }
